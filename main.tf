@@ -19,40 +19,23 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
-module "main_vpc" {
+module "tf_vpc" {
+  source = "terraform-aws-modules/vpc/aws"
 
-  source = "./custom_vpc"
-  env    = terraform.workspace
+  name = "tf-vpc"
+  cidr = "10.0.0.0/16"
 
-}
+  azs             = ["ap-northeast-2a", "ap-northeast-2c"]
+  private_subnets = ["10.0.0.0/24", "10.0.1.0/24"]
+  public_subnets  = ["10.0.100.0/24", "10.0.101.0/24"]
 
-resource "aws_s3_bucket" "tf_backend" {
-  count = terraform.workspace == "default" ? 1 : 0
-  bucket = "tf-backend-sanghoon"
+  enable_nat_gateway = true
+  single_nat_gateway = false
+  one_nat_gateway_per_az = true
+  /* enable_vpn_gateway = true */
+
   tags = {
-    Name = "tf_backend"
-  }
-}
-
-resource "aws_s3_bucket_acl" "tf_backend_acl" {
-  count = terraform.workspace == "default" ? 1 : 0
-  bucket     = aws_s3_bucket.tf_backend[0].id
-  acl        = "private"
-  depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
-}
-
-resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
-  count = terraform.workspace == "default" ? 1 : 0
-  bucket = aws_s3_bucket.tf_backend[0].id
-  rule {
-    object_ownership = "ObjectWriter"
-  }
-}
-
-resource "aws_s3_bucket_versioning" "tf_backend_versioning" {
-  count = terraform.workspace == "default" ? 1 : 0
-  bucket = aws_s3_bucket.tf_backend[0].id
-  versioning_configuration {
-    status = "Enabled"
+    Terraform = "true"
+    Environment = "terraform.workspaces"
   }
 }
