@@ -21,6 +21,7 @@ provider "aws" {
 
 module "tf_vpc" {
   source = "terraform-aws-modules/vpc/aws"
+  version = "3.18.1"
 
   name = "tf-vpc"
   cidr = "10.0.0.0/16"
@@ -36,7 +37,7 @@ module "tf_vpc" {
 
   tags = {
     Terraform = "true"
-    Environment = "terraform.workspaces"
+    Environment = terraform.workspace
   }
 }
 
