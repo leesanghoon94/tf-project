@@ -42,3 +42,12 @@ module "tf_vpc" {
     Environment = terraform.workspace
   }
 }
+resource "aws_instance" "web_instance" {
+  count = 2
+  ami = "ami-035233c9da2fabf52"
+  instance_type = "t2.micro"
+  subnet_id = module.tf_vpc.public_subnets[count.index]
+  tags = {
+    Name = "tf-ec2${count.index}"
+  }
+}
