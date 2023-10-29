@@ -23,7 +23,7 @@ module "tf_vpc" {
   source = "terraform-aws-modules/vpc/aws"
   version = "3.18.1"
 
-  name = "tf-vpc"
+  name = "tf-vpc_${terraform.workspace}"
   cidr = "10.0.0.0/16"
 
   azs             = ["ap-northeast-2a", "ap-northeast-2c"]
@@ -35,9 +35,10 @@ module "tf_vpc" {
   one_nat_gateway_per_az = true
   /* enable_vpn_gateway = true */
 
+  manage_default_security_group = true
+
   tags = {
     Terraform = "true"
     Environment = terraform.workspace
   }
 }
-
