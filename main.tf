@@ -21,13 +21,13 @@ provider "aws" {
 locals {
   default_vpc_id = "vpc-0bd752928d316c1e4"
   key_pair_name  = "lsh"
-  my-ip          = "122.37.29.17"
+  my_ip          = "122.37.29.17"
 }
 
 resource "aws_instance" "tf-ansible" {
   ami                    = "ami-035233c9da2fabf52"
   instance_type          = "t2.micro"
-  key_name               = locals.key_pair_name
+  key_name               = local.key_pair_name
   vpc_security_group_ids = [aws_security_group.ansible_test_sg]
   tags = {
     Name = "ansible-test"
@@ -44,13 +44,13 @@ resource "aws_security_group" "ansible_test_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${locals.myip}/32"]
+    cidr_blocks = ["${local.my_ip}/32"]
 
     description = "http"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["${locals.myip}/32}"]
+    cidr_blocks = ["${local.my_ip}/32}"]
   }
 
   egress = {
