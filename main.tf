@@ -6,9 +6,8 @@ terraform {
     }
   }
   cloud {
-
+    hostname     = "app.terraform.io"
     organization = "tf-sanghoon"
-
     workspaces {
       name = "test-prod"
     }
@@ -19,66 +18,45 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
-module "tf_vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "3.18.1"
-
-  name = "tf-vpc_${terraform.workspace}"
-  cidr = "10.0.0.0/16"
-
-  azs             = ["ap-northeast-2a", "ap-northeast-2c"]
-  private_subnets = ["10.0.0.0/24", "10.0.1.0/24"]
-  public_subnets  = ["10.0.100.0/24", "10.0.101.0/24"]
-  /* 
-  enable_nat_gateway = true
-  single_nat_gateway = false
-  one_nat_gateway_per_az = true */
-  /* enable_vpn_gateway = true */
-
-  manage_default_security_group = true
-
-  tags = {
-    Terraform   = "true"
-    Environment = terraform.workspace
-  }
+locals {
+  default_vpc_id = "vpc-0bd752928d316c1e4"
+  key_pair_name  = "lsh"
+  my-ip          = "122.37.29.17"
 }
-resource "aws_instance" "web_instance" {
-  count         = 2
-  ami           = "ami-035233c9da2fabf52"
-  instance_type = "t2.micro"
-  subnet_id     = module.tf_vpc.public_subnets[count.index]
+
+resource "aws_instance" "tf-ansible" {
+  ami                    = "ami-035233c9da2fabf52"
+  instance_type          = "t2.micro"
+  key_name               = locals.key_pair_name
+  vpc_security_group_ids = [aws_security_group.ansible_test_sg]
   tags = {
-    Name = "tf-ec2${count.index}"
+    Name = "ansible-test"
   }
 }
 
-module "tf_elb" {
-  source  = "terraform-aws-modules/elb/aws"
-  version = "~> 2.0"
+resource "aws_security_group" "ansible_test_sg" {
+  name        = "ansible_test_sg"
+  description = "ansible_test_sg"
+  vpc_id      = local.default_vpc_id
 
-  name = "tf-elb"
+  ingress = {
+    description = "ssh"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${locals.myip}/32"]
 
-  subnets         = module.tf_vpc.public_subnets
-  security_groups = [module.tf_vpc.default_security_group_id]
-  internal        = false
-
-  listener = [
-    {
-      instance_port     = 80
-      instance_protocol = "HTTP"
-      lb_port           = 80
-      lb_protocol       = "HTTP"
-    }
-  ]
-
-  health_check = {
-    target              = "HTTP:80/"
-    interval            = 30
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 5
+    description = "http"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["${locals.myip}/32}"]
   }
-  // ELB attachments
-  number_of_instances = 2
-  instances           = aws_instance.web_instance[*].id
+
+  egress = {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
