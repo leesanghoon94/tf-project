@@ -17,13 +17,11 @@ terraform {
 provider "aws" {
   region = "ap-northeast-2"
 }
-
 locals {
   default_vpc_id = "vpc-0bd752928d316c1e4"
-  key_pair_name  = "lsh"
-  my_ip          = "122.37.29.17"
+  key_pair_name = "lsh"
+  myip = "122.37.29.17"
 }
-
 resource "aws_instance" "tf-ansible" {
   ami           = "ami-035233c9da2fabf52"
   instance_type = "t2.micro"
@@ -45,14 +43,14 @@ resource "aws_security_group" "ansible_test_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${local.my_ip}/32"]
+    cidr_blocks = ["${local.myip}/32"]
   }
   ingress {
     description = "http"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["${local.my_ip}/32"]
+    cidr_blocks = ["${local.myip}/32"]
   }
 
   egress {
