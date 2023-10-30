@@ -28,7 +28,7 @@ resource "aws_instance" "tf-ansible" {
   ami                    = "ami-035233c9da2fabf52"
   instance_type          = "t2.micro"
   key_name               = local.key_pair_name
-  vpc_security_group_ids = [aws_security_group.ansible_test_sg]
+  vpc_security_group_ids = [aws_security_group.ansible_test_sg.id]
   tags = {
     Name = "ansible-test"
   }
@@ -39,30 +39,26 @@ resource "aws_security_group" "ansible_test_sg" {
   description = "ansible_test_sg"
   vpc_id      = local.default_vpc_id
 
-  ingress = [
-    {
-      description = "ssh"
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = ["${local.my_ip}/32"]
-    },
-    {
-      description = "http"
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["${local.my_ip}/32"]
-    }
-  ]
+  ingress {
+    description = "ssh"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${local.my_ip}/32"]
+  }
+  ingress {
+    description = "http"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["${local.my_ip}/32"]
+  }
 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  egress = [
-    {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  ]
 }
