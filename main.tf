@@ -28,7 +28,7 @@ resource "aws_instance" "tf-ansible" {
   ami                    = "ami-035233c9da2fabf52"
   instance_type          = "t2.micro"
   key_name               = local.key_pair_name
-  subnet_id = local.vpc_id
+  
   vpc_security_group_ids = [aws_security_group.ansible_test_sg.id]
   tags = {
     Name = "ansible-test"
