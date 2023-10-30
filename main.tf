@@ -19,7 +19,7 @@ provider "aws" {
 }
 
 locals {
-  default_vpc_id = "vpc-0bd752928d316c1e4"
+  vpc_id = "vpc-0bd752928d316c1e4"
   key_pair_name  = "lsh"
   my_ip          = "122.37.29.17"
 }
@@ -37,7 +37,7 @@ resource "aws_instance" "tf-ansible" {
 resource "aws_security_group" "ansible_test_sg" {
   name        = "ansible_test_sg"
   description = "ansible_test_sg"
-  vpc_id      = local.default_vpc_id
+  vpc_id      = local.vpc_id
 
   ingress {
     description = "ssh"
